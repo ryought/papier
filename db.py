@@ -38,6 +38,16 @@ class DB:
         }
         self.db[doi] = entry
 
+    def register_file(self, doi, filename):
+        pass
+
+    def update_file_locations(self, doi):
+        # update all files
+        # if db['some doi'].filename[i] is not match to the current config,
+        # update (mv) them to match the rule.
+        # it also find missing files.
+        pass
+
     def add_file(self, doi, filename):
         self.db[doi]['filename'].append(filename)
 
@@ -56,6 +66,7 @@ class DB:
         entry = self.db[doi]
         return {
                 'title': entry['info']['title'],
+                'title_short': '_'.join(entry['info']['title'].split()[:3]),
                 'author': get_author_text(entry),
                 'author_short': get_author_short(entry),
                 'year': get_issued_year(entry),

@@ -1,17 +1,48 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-def fn_add(db, config, doi, filename):
-    # add entry
-    db.add(doi)
-    # move file and rename it
+import subprocess
+import os
+import shutil
 
-    # add new file to database
-    db.add_file(doi, filename)
-    db.dump()
+# 3rd party
+from iterfzf import iterfzf
+import editor
+
+# package
+from doi import doi2apacite, doi2bibtex, fuzzy2doi
+from config import load_config
+from db import DB
+
+def fn_add(db, config, doi, filename):
+    doi = fuzzy2doi(doi)
+    # add entry
+    if doi in db.db:
+        print('Error: The article is already registered.')
+    else:
+        db.add(doi)
+        # move file and rename it
+        store_filename = os.path.expanduser(config['dbDir']) + config['renameStyle'].format(**db.get_info(doi))
+        input_filename = os.path.abspath(os.path.expanduser(filename))
+        if not os.path.isfile(input_filename):
+            print('Error: Cannot read the given document')
+            return
+        if os.path.isfile(store_filename):
+            print('Error: There is the same name document, so skip file registering.')
+            return
+
+        if not os.path.isdir(os.path.split(store_filename)[0]):
+            os.makedirs(os.path.split(store_filename)[0])
+
+        # copy file
+        shutil.copyfile(input_filename, store_filename)
+        print('Info: copied', input_filename, 'to', store_filename)
+        # add new file to database
+        db.add_file(doi, store_filename)
+
+        db.dump()
 
 def fn_search(db, config):
     # show all text
-    from iterfzf import iterfzf
     article_list = [(config['listStyle']+' {doi}').format(**db.get_info(doi)) for doi in db.db.keys()]
     ret = iterfzf(article_list, multi=False, encoding='utf-8')
     if ret:
@@ -20,8 +51,6 @@ def fn_search(db, config):
         # show info of selected doi
         fn_info(db, config, doi)
 
-import subprocess
-import os
 def fn_open(db, config, doi):
     entry = db.get(doi)
     files = entry['filename']
@@ -33,25 +62,21 @@ def fn_open(db, config, doi):
             print(f, 'does not exist')
 
 def fn_info(db, config, doi):
-    print('INFO of {}'.format(doi))
-    print(db.get_info(doi))
-    print('note:', db.get_note(doi))
-
-    print('filename candidate:', config['renameStyle'].format(**db.get_info(doi)))
+    import pprint
+    print('doi: {}'.format(doi))
+    pprint.pprint(db.get_info(doi))
+    print('note: {}'.format(db.get_note(doi)))
 
 def fn_note(db, config, doi):
-    import editor
     text = db.get_note(doi)
     new_text = editor.edit(contents=text).decode('utf-8')
     db.set_note(doi, new_text)
     db.dump()
 
 def fn_cite(db, config, doi):
-    from doi import doi2apacite
     print(doi2apacite(doi))
 
 def fn_bibtex(db, config, doi):
-    from doi import doi2bibtex
     print(doi2bibtex(doi))
 
 def main():
@@ -85,10 +110,8 @@ def main():
     parser_info.add_argument('--bibtex', action='store_true', help='optional argument')
     parser_info.set_defaults(fn=fn_info)
 
-    from config import load_config
     config = load_config()
 
-    from db import DB
     db = DB(config['dbDir'])
 
     args = parser.parse_args()

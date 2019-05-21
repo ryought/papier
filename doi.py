@@ -40,8 +40,8 @@ def fuzzy2doi(fuzzy_doi):
     else:
         return fuzzy_doi
 
-def get_doi_for_filename(doi):
-    return re.sub(r'[\\|/|:|?|.|"|<|>|\|\*|]', '_', doi)
+def make_better_for_filename(text):
+    return re.sub(r'[\\|/|:|?|.|"|<|>|\|\*|]', '_', text)
 
 if __name__ == '__main__':
     doi = '10.1038/nature12593'

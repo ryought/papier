@@ -1,5 +1,5 @@
 import json
-from doi import doi2json, get_doi_for_filename
+from doi import doi2json, make_better_for_filename
 import os
 
 class DB:
@@ -57,6 +57,12 @@ class DB:
     def get(self, doi):
         return self.db[doi]
 
+    def get_category(self, doi):
+        return self.db[doi]['category']
+    def set_category(self, doi, category):
+        if category:
+            self.db[doi]['category'] = category
+
     def get_note(self, doi):
         return self.db[doi]['note']
     def set_note(self, doi, note):
@@ -65,16 +71,19 @@ class DB:
     def get_info(self, doi):
         entry = self.db[doi]
         return {
-                'title': entry['info']['title'],
-                'title_short': '_'.join(entry['info']['title'].split()[:3]),
+                'title': ' '.join(entry['info']['title'].replace('\n', ' ').split(' ')),
+                'title_short': make_better_for_filename('_'.join(entry['info']['title'].split()[:3])),
                 'author': get_author_text(entry),
-                'author_short': get_author_short(entry),
+                'author_short': make_better_for_filename(get_author_short(entry)),
                 'year': get_issued_year(entry),
                 'publisher': get_publisher(entry),
                 'category': entry['category'],
                 'doi': doi,
-                'doi_for_filename': get_doi_for_filename(doi)
+                'doi_for_filename': make_better_for_filename(doi),
+                'files': entry['filename']
                 }
+    def get_categories(self):
+        return list(set([self.db[doi]['category'] for doi in self.db]))
 
 # functions for entry
 def get_author_short(entry):

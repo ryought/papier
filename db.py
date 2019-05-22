@@ -29,11 +29,11 @@ class DB:
         with open(self.path + 'db.json', 'w') as f:
             json.dump(self.db, f, indent=4)
 
-    def add(self, doi):
+    def add(self, doi, category):
         entry = {
                 'info': doi2json(doi),
                 'filename': [],
-                'category': 'inbox',
+                'category': category,
                 'note': ''
         }
         self.db[doi] = entry

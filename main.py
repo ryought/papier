@@ -13,12 +13,12 @@ from doi import doi2apacite, doi2bibtex, fuzzy2doi
 from config import load_config
 from db import DB
 
-def fn_add(db, config, doi, filename):
+def fn_add(db, config, doi, filename, category):
     # add first entry
     if doi in db.db:
         print('Error: The article is already registered.')
     else:
-        db.add(doi)
+        db.add(doi, category)
         # move file and rename it
         store_filename = os.path.expanduser(config['dbDir']) + config['renameStyle'].format(**db.get_info(doi)) + '.pdf'
         input_filename = os.path.abspath(os.path.expanduser(filename))
@@ -113,6 +113,7 @@ def fn_note(db, config, doi):
 
 def fn_edit_category(db, config, doi, category):
     db.set_category(doi, category)
+    # TODO move files
     db.dump()
 
 def fn_cite(db, config, doi):
@@ -179,7 +180,10 @@ def main():
         if args.append:
             fn_append(db, config, doi, args.filename)
         else:
-            fn_add(db, config, doi, args.filename)
+            if args.category:
+                fn_add(db, config, doi, args.filename, category=args.category)
+            else:
+                fn_add(db, config, doi, args.filename, category=config['defaultCategory'])
 
     elif args.fn == fn_search:
         print('TODO')

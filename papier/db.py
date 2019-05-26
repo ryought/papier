@@ -1,5 +1,5 @@
 import json
-from doi import doi2json, make_better_for_filename
+from .doi import doi2json, make_better_for_filename
 import os
 
 class DB:

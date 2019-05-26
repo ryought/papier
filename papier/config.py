@@ -6,7 +6,7 @@ import os
 default_config = {
         'dbDir': '~/papier_tmp/',  # 保管場所
         'defaultCategory': 'inbox',
-        'renameStyle': '{category}/{author_short}_{year}_{title_short}_{doi_for_filename}',  # pdfの保管のファイル名のスタイル
+        'renameStyle': '{category}/{author_short}_{year}_{title_short}_{doi_for_filename}_{i}.pdf',  # pdfの保管のファイル名のスタイル
         'listStyle': '[{category}] {title} | {year} | {publisher} | {author_short}'  # fzfで表示する時のスタイル
 }
 

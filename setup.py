@@ -6,7 +6,7 @@ setup(
         install_requires=["iterfzf", "python-editor"],
         entry_points={
             "console_scripts": [
-                "papier = main:main"
+                "papier = papier.main:main"
                 ]
             }
         )

@@ -9,9 +9,12 @@ from iterfzf import iterfzf
 import editor
 
 # package
-from doi import doi2apacite, doi2bibtex, fuzzy2doi
-from config import load_config
-from db import DB
+# from papier.doi import doi2apacite, doi2bibtex, fuzzy2doi
+# from papier.config import load_config
+# from papier.db import DB
+from .doi import doi2apacite, doi2bibtex, fuzzy2doi
+from .config import load_config
+from .db import DB
 
 def fn_add(db, config, doi, filename, category):
     # add first entry
@@ -20,7 +23,7 @@ def fn_add(db, config, doi, filename, category):
     else:
         db.add(doi, category)
         # move file and rename it
-        store_filename = os.path.expanduser(config['dbDir']) + config['renameStyle'].format(**db.get_info(doi)) + '.pdf'
+        store_filename = os.path.expanduser(config['dbDir']) + config['renameStyle'].format(**db.get_info(doi))
         input_filename = os.path.abspath(os.path.expanduser(filename))
         if not os.path.isfile(input_filename):
             print('Error: Cannot read the given document')
@@ -44,11 +47,7 @@ def fn_append(db, config, doi, filename):
     files = db.get(doi)['filename']
     print('files', files)
     # move file and rename it
-    store_filename = os.path.expanduser(config['dbDir']) + config['renameStyle'].format(**db.get_info(doi)) + '.pdf'
-    i = 0
-    while store_filename in files:
-        i += 1
-        store_filename = os.path.expanduser(config['dbDir']) + (config['renameStyle'] + '_{i}').format(i=i, **db.get_info(doi)) + '.pdf'
+    store_filename = os.path.expanduser(config['dbDir']) + config['renameStyle'].format(i=len(files)+1, **db.get_info(doi))
     print('store_filename', store_filename)
     input_filename = os.path.abspath(os.path.expanduser(filename))
     if not os.path.isfile(input_filename):
@@ -113,7 +112,15 @@ def fn_note(db, config, doi):
 
 def fn_edit_category(db, config, doi, category):
     db.set_category(doi, category)
-    # TODO move files
+    entry = db.get(doi)
+    files = entry['filename']
+    for i, old_name in enumerate(files):
+        new_name = os.path.expanduser(config['dbDir']) + config['renameStyle'].format(i=i, **db.get_info(doi))
+        if not os.path.isdir(os.path.split(new_name)[0]):
+            os.makedirs(os.path.split(new_name)[0])
+        shutil.move(old_name, new_name)
+        print('Info: moved', old_name, 'to', new_name)
+        files[i] = new_name
     db.dump()
 
 def fn_cite(db, config, doi):

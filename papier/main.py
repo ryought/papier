@@ -23,7 +23,7 @@ def fn_add(db, config, doi, filename, category):
     else:
         db.add(doi, category)
         # move file and rename it
-        store_filename = os.path.expanduser(config['dbDir']) + config['renameStyle'].format(**db.get_info(doi))
+        store_filename = os.path.expanduser(config['dbDir']) + config['renameStyle'].format(i=0, **db.get_info(doi))
         input_filename = os.path.abspath(os.path.expanduser(filename))
         if not os.path.isfile(input_filename):
             print('Error: Cannot read the given document')
